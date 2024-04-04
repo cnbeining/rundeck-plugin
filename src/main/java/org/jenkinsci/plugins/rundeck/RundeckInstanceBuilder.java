@@ -24,18 +24,24 @@ public class RundeckInstanceBuilder {
         return client;
     }
 
-    RundeckInstanceBuilder client(RundeckManager client){
+    RundeckInstanceBuilder client(RundeckManager client) throws IllegalArgumentException {
         if(client.getRundeckInstance().getName()!=null) {
             this.name = client.getRundeckInstance().getName();
         }
+
         this.url = client.getRundeckInstance().getUrl();
-         if(client.getRundeckInstance().getPassword()!=null){
-            this.password = client.getRundeckInstance().getPassword();
-        }
+
+        // Token and username-password are mutually exclusive: Prefer Token
         if(client.getRundeckInstance().getToken()!=null){
             this.token = client.getRundeckInstance().getToken();
+        } else {
+            if(client.getRundeckInstance().getPassword()!=null && client.getRundeckInstance().getLogin()!=null){
+                this.password = client.getRundeckInstance().getPassword();
+                this.login = client.getRundeckInstance().getLogin();
+            } else {
+                throw new IllegalArgumentException("Rundeck instance must have either a token or or both login and password");
+            }
         }
-        this.login = client.getRundeckInstance().getLogin();
 
         if(client.getRundeckInstance().getApiVersion()!=null){
             this.apiVersion = client.getRundeckInstance().getApiVersion();
@@ -46,18 +52,22 @@ public class RundeckInstanceBuilder {
         return this;
     }
 
-    RundeckInstanceBuilder client(RundeckInstance client){
+    RundeckInstanceBuilder client(RundeckInstance client) throws IllegalArgumentException{
         this.url = client.getUrl();
         if(client.getName()!=null) {
             this.name = client.getName();
         }
-        if(client.getPassword()!=null){
-            this.password = client.getPassword();
-        }
         if(client.getToken()!=null){
             this.token = client.getToken();
+            } else {
+                if(client.getPassword()!=null && client.getLogin()!=null){
+                this.password = client.getPassword();
+                this.login = client.getLogin();
+            } else {
+                throw new IllegalArgumentException("Rundeck instance must have either a token or both login and password");
+            }
         }
-        this.login = client.getLogin();
+
         this.apiVersion = client.getApiVersion();
         return this;
     }
@@ -91,9 +101,12 @@ public class RundeckInstanceBuilder {
     public RundeckInstance build() {
         RundeckInstance client = new RundeckInstance(this.name, this.url);
         client.setApiVersion(this.apiVersion);
-        client.setLogin(this.login);
-        client.setPassword(this.password);
-        client.setToken(this.token);
+        if (this.token != null) {
+            client.setToken(this.token);
+        } else {
+            client.setLogin(this.login);
+            client.setPassword(this.password);
+        }
 
         return client;
     }

@@ -53,9 +53,12 @@ public class RundeckClientManager implements RundeckManager {
 
             if(rundeckInstance.getToken()!=null && !rundeckInstance.getToken().getPlainText().isEmpty()){
                 builder.tokenAuth(rundeckInstance.getToken().getPlainText());
-            }
-            if(rundeckInstance.getLogin() != null && rundeckInstance.getPassword()!=null){
-                builder.passwordAuth(rundeckInstance.getLogin(),rundeckInstance.getPassword().getPlainText() );
+            } else {
+                if(rundeckInstance.getLogin() != null && rundeckInstance.getPassword()!=null){
+                    builder.passwordAuth(rundeckInstance.getLogin(),rundeckInstance.getPassword().getPlainText() );
+                } else {
+                    throw new IllegalArgumentException("Rundeck instance must have either a token or both login and password");
+                }
             }
 
             if(rundeckInstance.getApiVersion()!=null){
